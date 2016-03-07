@@ -1,5 +1,9 @@
 #pragma once
 
+#include <stdint.h>
+#include <assert.h>
+
+void MyMap_UnitTest();
 
 template <typename TKey, typename TValue>
 class MyBinaryTree

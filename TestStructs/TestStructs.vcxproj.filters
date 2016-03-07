@@ -50,5 +50,8 @@
     <ClCompile Include="MySearch.cpp">
       <Filter>Collections</Filter>
     </ClCompile>
+    <ClCompile Include="MyMap.cpp">
+      <Filter>Collections</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
