@@ -219,20 +219,25 @@ public:
 		}, false);
 	}
 
-#ifdef _DEBUG
 	void dump()
 	{
 		printf("\n");
 		inspect_each_node(m_root, [&](NodePtr node) {
-			printf("%p = L:%p R:%p | ", node, node->m_left, node->m_right);
-			printf("%d=%d L:%d R:%d\n", 
-				node->m_key, 
-				node->m_value, 
-				node->m_left?node->m_left->m_key:-1, 
-				node->m_right?node->m_right->m_key:-1);
+			if (std::is_same<TKey, int>::value)
+			{
+				// pretty print the ints
+				printf("K:%3d L:%3d R:%3d\n",
+					node->m_key,
+					node->m_left  ? node->m_left->m_key  : -1,
+					node->m_right ? node->m_right->m_key : -1);
+			}
+			else
+			{
+				// memory addresses!
+				printf("K:%p L:%p R:%p\n", node, node->m_left, node->m_right);
+			}
 		}, false);
 	}
-#endif
 };
 
 
