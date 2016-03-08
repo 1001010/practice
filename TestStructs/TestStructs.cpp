@@ -15,7 +15,6 @@ int main()
 	MyList_UnitTest();
 	MySearch_UnitTest();
 	MyMap_UnitTest();
-	
 
 	printf("\nComplete.\n");
     return 0;

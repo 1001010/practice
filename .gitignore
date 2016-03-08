@@ -26,3 +26,13 @@
 *.exe
 *.out
 *.app
+
+# VC Directories
+.vs
+Debug
+Release
+x86
+ipch
+
+*.VC.opendb
+*.sdf

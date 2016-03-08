@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <iostream>
 
 void MyMap_UnitTest();
 
@@ -24,31 +25,45 @@ protected:
 		Node *m_right;
 	};
 
-	Node *m_root;
+	typedef Node * NodePtr;
+
+	NodePtr m_root;
 	size_t m_count;
 
 	void destroy_tree()
 	{
 		inspect_each_node(m_root, 
-			[this] (Node *node) 
+			[this] (NodePtr node)
 			{
 				free_node(node); 
-			}
+			},
+			true
 		);
 	}
 
 	template<typename TFunc>
-	void inspect_each_node(Node *node, TFunc func)
+	void inspect_each_node(NodePtr node, TFunc func, bool children_first)
 	{
 		if (node != nullptr)
 		{
-			inspect_each_node(node->m_left,  func);
-			inspect_each_node(node->m_right, func);
-			func(node);
+			if (children_first)
+			{
+				// good for deleting child nodes safely
+				inspect_each_node(node->m_left,  func, children_first);
+				inspect_each_node(node->m_right, func, children_first);
+				func(node);
+			}
+			else
+			{
+				// good for debug dumps
+				func(node);
+				inspect_each_node(node->m_left,  func, children_first);
+				inspect_each_node(node->m_right, func, children_first);
+			}
 		}
 	}
 
-	void free_node(Node *&node)
+	void free_node(NodePtr &node)
 	{
 		assert(m_count);
 		delete node;
@@ -78,7 +93,7 @@ protected:
 		}
 	}
 
-	Node * find_by_key(Node *node, const TKey &key)
+	NodePtr  find_by_key(NodePtr node, const TKey &key)
 	{
 		if (!node)
 		{
@@ -98,7 +113,7 @@ protected:
 		}
 	}
 
-	Node * find_min(Node *node)
+	NodePtr find_min(NodePtr node)
 	{
 		while (node && node->m_left != nullptr)
 		{
@@ -107,7 +122,7 @@ protected:
 		return node;
 	}
 
-	Node * erase_node_by_key(Node *root, const TKey &key)
+	NodePtr erase_node_by_key(NodePtr root, const TKey &key)
 	{
 		if (!root)
 		{
@@ -115,7 +130,7 @@ protected:
 		}
 		else if (key < root->m_key)
 		{
-			root->m_left = erase_node_by_key(root->m_left, key)
+			root->m_left = erase_node_by_key(root->m_left, key);
 		}
 		else if (key > root->m_key)
 		{
@@ -131,23 +146,23 @@ protected:
 			else if (root->m_right && root->m_left == nullptr)
 			{
 				// one child on the right
-				Node *temp = root;
-				root = root->right;
+				NodePtr temp = root;
+				root = root->m_right;
 				free_node(temp);
 			}
 			else if (root->m_left && root->m_right == nullptr)
 			{
 				// one child on the left
-				Node *temp = root;
+				NodePtr temp = root;
 				root = root->m_left;
 				free_node(temp);
 			}
 			else
 			{
 				// we have children on the left and right
-				Node *temp = find_min(root->right);
-				root->data = temp->data;
-				root->right = erase_node_by_key(root->m_right, temp->m_key);
+				NodePtr temp = find_min(root->m_right);
+				root->m_value = temp->m_value;
+				root->m_right = erase_node_by_key(root->m_right, temp->m_key);
 			}
 		}
 		return root;
@@ -177,7 +192,7 @@ public:
 
 	bool get(const TKey &key, TValue &value)
 	{
-		Node * finder = find_by_key(m_root, key);
+		NodePtr finder = find_by_key(m_root, key);
 		if (finder)
 		{
 			value = finder->m_value;
@@ -193,17 +208,31 @@ public:
 
 	void remove(const TKey &key)
 	{
-		erase_node_by_key(m_root, key);
+		m_root = erase_node_by_key(m_root, key);
 	}
 
 	template<typename TFunc>
 	void iterate(TFunc func)
 	{
-		inspect_each_node(m_root, [&](Node *node) {
+		inspect_each_node(m_root, [&](NodePtr node) {
 			func(node->m_key, node->m_value);
-		});
+		}, false);
 	}
 
+#ifdef _DEBUG
+	void dump()
+	{
+		printf("\n");
+		inspect_each_node(m_root, [&](NodePtr node) {
+			printf("%p = L:%p R:%p | ", node, node->m_left, node->m_right);
+			printf("%d=%d L:%d R:%d\n", 
+				node->m_key, 
+				node->m_value, 
+				node->m_left?node->m_left->m_key:-1, 
+				node->m_right?node->m_right->m_key:-1);
+		}, false);
+	}
+#endif
 };
 
 
