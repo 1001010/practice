@@ -98,6 +98,8 @@ bool MyBinaryTree_UnitTest()
 		return false;
 	}
 
+	bt.set(1, 1);
+
 	printf("\nPASS");
 
 	return true;

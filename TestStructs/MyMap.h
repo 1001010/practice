@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <assert.h>
-#include <iostream>
+#include <type_traits>
 
 void MyMap_UnitTest();
 
