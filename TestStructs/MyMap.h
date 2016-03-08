@@ -93,7 +93,7 @@ protected:
 		}
 	}
 
-	NodePtr  find_by_key(NodePtr node, const TKey &key)
+	NodePtr find_by_key(NodePtr node, const TKey &key)
 	{
 		if (!node)
 		{
@@ -122,50 +122,60 @@ protected:
 		return node;
 	}
 
-	NodePtr erase_node_by_key(NodePtr root, const TKey &key)
+	NodePtr erase_node_by_key(NodePtr node, const TKey &key)
 	{
-		if (!root)
+		if (!node)
 		{
 			return nullptr;
 		}
-		else if (key < root->m_key)
+		else if (key < node->m_key)
 		{
-			root->m_left = erase_node_by_key(root->m_left, key);
+			node->m_left = erase_node_by_key(node->m_left, key);
 		}
-		else if (key > root->m_key)
+		else if (key > node->m_key)
 		{
-			root->m_right = erase_node_by_key(root->m_right, key);
+			node->m_right = erase_node_by_key(node->m_right, key);
 		}
 		else // it's a match
 		{
-			if (root->m_left == nullptr && root->m_right == nullptr)
+			if (node->m_left == nullptr && node->m_right == nullptr)
 			{
 				// No children
-				free_node(root);
+				free_node(node);
 			}
-			else if (root->m_right && root->m_left == nullptr)
+			else if (node->m_right && node->m_left == nullptr)
 			{
 				// one child on the right
-				NodePtr temp = root;
-				root = root->m_right;
+				NodePtr temp = node;
+				node = node->m_right;
 				free_node(temp);
 			}
-			else if (root->m_left && root->m_right == nullptr)
+			else if (node->m_left && node->m_right == nullptr)
 			{
 				// one child on the left
-				NodePtr temp = root;
-				root = root->m_left;
+				NodePtr temp = node;
+				node = node->m_left;
 				free_node(temp);
 			}
 			else
 			{
 				// we have children on the left and right
-				NodePtr temp = find_min(root->m_right);
-				root->m_value = temp->m_value;
-				root->m_right = erase_node_by_key(root->m_right, temp->m_key);
+				/*
+				  node
+				 /    \
+				L      R
+				      / \
+				   RL1   RR1
+				*/
+				// find the lowest value on the right side to replace node with
+				NodePtr temp = find_min(node->m_right);
+				assert(temp->m_left == nullptr);
+				node->m_key   = temp->m_key;
+				node->m_value = temp->m_value;
+				node->m_right = erase_node_by_key(node->m_right, temp->m_key);
 			}
 		}
-		return root;
+		return node;
 	}
 
 public:
@@ -223,19 +233,22 @@ public:
 	{
 		printf("\n");
 		inspect_each_node(m_root, [&](NodePtr node) {
+			
+			// memory addresses!
+			printf("%p <- %p -> %p",
+				node->m_left,
+				node,
+				node->m_right);
+			
 			if (std::is_same<TKey, int>::value)
 			{
 				// pretty print the ints
-				printf("K:%3d L:%3d R:%3d\n",
-					node->m_key,
+				printf(" | %3d <- %3d -> %3d",
 					node->m_left  ? node->m_left->m_key  : -1,
+					node->m_key,
 					node->m_right ? node->m_right->m_key : -1);
 			}
-			else
-			{
-				// memory addresses!
-				printf("K:%p L:%p R:%p\n", node, node->m_left, node->m_right);
-			}
+			printf("\n");
 		}, false);
 	}
 };
