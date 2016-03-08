@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <stdint.h>
 
-
-int32_t my_binary_search(int32_t *arrayPtr, size_t arrayLen, const int32_t &searchValue)
+template<typename TType>
+int32_t my_binary_search(TType *arrayPtr, size_t arrayLen, const TType &searchValue)
 {
 	const int32_t FIRST_VALID =  0;
 	const int32_t NOT_FOUND   = -1;
@@ -57,7 +57,7 @@ int32_t my_binary_search(int32_t *arrayPtr, size_t arrayLen, const int32_t &sear
 	return midPosition;
 }
 
-void MySearch_UnitTest()
+void MyBinarySearch_UnitTest()
 {
 	int32_t data_a[] = { 0, 1, 2, 3 };
 	assert(my_binary_search(data_a, 4, -1) == -1);
@@ -84,22 +84,22 @@ void MySearch_UnitTest()
 
 	assert(my_binary_search(data_a, 0, 0) == -1);
 	
-	int32_t data_b[] = { 3, 2, 1, 0 };
-	assert(my_binary_search(data_b, 4, 0) == -2);
-	assert(my_binary_search(data_b, 4, 1) == -2);
-	assert(my_binary_search(data_b, 4, 2) == -2);
-	assert(my_binary_search(data_b, 4, 3) == -2);
+	double data_b[] = { 3.0, 2.0, 1.0, 0.0 };
+	assert(my_binary_search(data_b, 4, 0.0) == -2);
+	assert(my_binary_search(data_b, 4, 1.0) == -2);
+	assert(my_binary_search(data_b, 4, 2.0) == -2);
+	assert(my_binary_search(data_b, 4, 3.0) == -2);
 
-	assert(my_binary_search(data_b, 3, 0) == -2);
-	assert(my_binary_search(data_b, 3, 1) == -2);
-	assert(my_binary_search(data_b, 3, 2) == -2);
+	assert(my_binary_search(data_b, 3, 0.0) == -2);
+	assert(my_binary_search(data_b, 3, 1.0) == -2);
+	assert(my_binary_search(data_b, 3, 2.0) == -2);
 
-	assert(my_binary_search(data_b, 2, 0) == -2);
-	assert(my_binary_search(data_b, 2, 1) == -2);
+	assert(my_binary_search(data_b, 2, 0.0) == -2);
+	assert(my_binary_search(data_b, 2, 1.0) == -2);
 
-	assert(my_binary_search(data_b, 1, 3) == 0);
+	assert(my_binary_search(data_b, 1, 3.0) == 0);
 
-	assert(my_binary_search(data_b, 0, 0) == -1);
+	assert(my_binary_search(data_b, 0, 0.0) == -1);
 }
 
 void swap(int *x, int *y)
@@ -145,4 +145,10 @@ void my_quicksort(int list[], int m, int n)
 		my_quicksort(list, m, j - 1);
 		my_quicksort(list, j + 1, n);
 	}
+}
+
+
+void MySearch_UnitTest()
+{
+	MyBinarySearch_UnitTest();
 }
