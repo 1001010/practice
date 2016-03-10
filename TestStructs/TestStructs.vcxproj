@@ -141,6 +141,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MyCircularBuffer.h" />
     <ClInclude Include="MyList.h" />
     <ClInclude Include="MyMap.h" />
     <ClInclude Include="MySearch.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MyCircularBuffer.cpp" />
     <ClCompile Include="MyList.cpp" />
     <ClCompile Include="MyMap.cpp" />
     <ClCompile Include="MySearch.cpp" />

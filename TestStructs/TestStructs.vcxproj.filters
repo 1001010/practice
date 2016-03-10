@@ -36,6 +36,9 @@
     <ClInclude Include="MyMap.h">
       <Filter>Collections</Filter>
     </ClInclude>
+    <ClInclude Include="MyCircularBuffer.h">
+      <Filter>Collections</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +54,9 @@
       <Filter>Collections</Filter>
     </ClCompile>
     <ClCompile Include="MyMap.cpp">
+      <Filter>Collections</Filter>
+    </ClCompile>
+    <ClCompile Include="MyCircularBuffer.cpp">
       <Filter>Collections</Filter>
     </ClCompile>
   </ItemGroup>

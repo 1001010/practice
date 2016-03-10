@@ -6,6 +6,7 @@
 #include "MyList.h"
 #include "MySearch.h"
 #include "MyMap.h"
+#include "MyCircularBuffer.h"
 #include <assert.h>
 
 int main()
@@ -15,6 +16,7 @@ int main()
 	MyList_UnitTest();
 	MySearch_UnitTest();
 	MyMap_UnitTest();
+	MyCircularBuffer_UnitTest();
 
 	printf("\nComplete.\n");
     return 0;
