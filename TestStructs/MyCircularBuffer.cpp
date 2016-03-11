@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <list>
+#include <algorithm>
 
 void TestSingleAdd(MyUncomfortableMovingAverage &collection, int add, double expected, uint8_t precision)
 {
@@ -24,8 +25,8 @@ void TestSingleAdd(MyUncomfortableMovingAverage &collection, int add, double exp
 }
 
 
-template <typename TMyMovingAverage>
-void Test_MyMovingAverage_AddOne(TMyMovingAverage &collection, int add, double expected, uint8_t precision)
+template <typename TMyMovingAverage, typename TAddType>
+void Test_MyMovingAverage_AddOne(TMyMovingAverage &collection, TAddType add, double expected, uint8_t precision)
 {
 	int factor = 1;
 	for (uint8_t i = 0; i < precision; i++)
@@ -48,15 +49,29 @@ void Test_MyMovingAverage_AddOne(TMyMovingAverage &collection, int add, double e
 	assert(int_expected == int_average);
 }
 
-
-struct test_sample {
-	int     m_add;
-	double  m_expected;
-	uint8_t m_precision;
+struct test_sample_int {
+	int      m_add;
+	double   m_expected;
+	uint8_t  m_precision;
 };
 
 template <typename TMyMovingAverage>
-void Test_MyMovingAverage_AddMany(TMyMovingAverage &collection, test_sample *samples, size_t num_samples)
+void Test_MyMovingAverage_AddMany(TMyMovingAverage &collection, test_sample_int *samples, size_t num_samples)
+{
+	for (size_t i = 0; i < num_samples; i++)
+	{
+		Test_MyMovingAverage_AddOne(collection, samples[i].m_add, samples[i].m_expected, samples[i].m_precision);
+	}
+}
+
+struct test_sample_double {
+	float	m_add;
+	double	m_expected;
+	uint8_t	m_precision;
+};
+
+template <typename TMyMovingAverage>
+void Test_MyMovingAverage_AddMany(TMyMovingAverage &collection, test_sample_double *samples, size_t num_samples)
 {
 	for (size_t i = 0; i < num_samples; i++)
 	{
@@ -74,7 +89,7 @@ void MyCircularBuffer_UnitTest()
 	TestSingleAdd(uncomfortable, 9, 6.33, 2);
 	TestSingleAdd(uncomfortable, 5, 5.66, 2);
 
-	test_sample samples_for_3[] = {
+	test_sample_int samples_for_3[] = {
 		{ 7, 7.00, 2 },
 		{ 3, 5.00, 2 },
 		{ 9, 6.33, 2 },
@@ -82,7 +97,7 @@ void MyCircularBuffer_UnitTest()
 	};
 	size_t num_samples_for_3 = ARRAY_SIZE(samples_for_3);
 
-	test_sample samples_for_3_bools[] = {
+	test_sample_int samples_for_3_bools[] = {
 		{ 0, 0.00, 2 },
 		{ 1, 0.50, 2 },
 		{ 1, 0.66, 2 },
@@ -109,4 +124,15 @@ void MyCircularBuffer_UnitTest()
 	Test_MyMovingAverage_AddMany(m5, samples_for_3, num_samples_for_3);
 	Test_MyMovingAverage_AddMany(m6, samples_for_3, num_samples_for_3);
 	Test_MyMovingAverage_AddMany(m7, samples_for_3, num_samples_for_3);
+
+	test_sample_double samples_for_3_floats[] = {
+		{ 0.00f, 0.00, 2 },
+		{ 1.00f, 0.50, 2 },
+		{ 0.01f, 0.33, 2 },
+		{ 0.99f, 0.66, 2 },
+	};
+	size_t num_samples_for_3_floats = ARRAY_SIZE(samples_for_3_floats);
+	MyMovingFloatAverage<3> mf0;
+
+	Test_MyMovingAverage_AddMany(mf0, samples_for_3_floats, num_samples_for_3_floats);
 }

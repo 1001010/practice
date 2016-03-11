@@ -153,7 +153,6 @@ public:
 /*
 	For storing floating point values between 0.0 and 1.0
 */
-#if 0
 template <size_t TWindowSize>
 class MyMovingFloatAverage
 {
@@ -174,7 +173,6 @@ public:
 		, average(m_average)
 		, capacity(TWindowSize)
 	{
-#pragma message("CAUTION: MyMovingFloatAverage is untested and experimental, waiting for unit tests")
 		static_assert(TWindowSize > 0, "Must have a non-zero collection of elements");
 		static_assert(TWindowSize < UINT16_MAX, "That's a mighty big TWindowSize you have there, this collection is not optimized for that range. check your template params");
 	}
@@ -211,9 +209,8 @@ public:
 			m_total -= m_history[m_position % TWindowSize];
 		}
 
-		if (will_overflow_if_added(m_total, new_val))
+		if (will_overflow_if_added(m_total, value))
 		{
-			
 			assert(!"Overflow condition detected and prevented");
 			m_history[m_position++ % TWindowSize] = 0.0;
 			result = false;
@@ -221,16 +218,16 @@ public:
 		else
 		{
 			// should be safe to add in
-			m_total += new_val;
-			m_history[m_position++ % TWindowSize] = new_val;
+			m_total += value;
+			m_history[m_position++ % TWindowSize] = value;
 			result = true;
 		}
 
 		m_average = m_total / m_size;
-		return result
+		return result;
 	}
 };
-#endif //0 not ready
+
 
 
 #if 0 // not ready
