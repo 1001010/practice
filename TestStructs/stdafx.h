@@ -11,5 +11,8 @@
 #include <tchar.h>
 #include <stdint.h>
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x)  (sizeof(x)/sizeof(x[0]))
+#endif
 
 // TODO: reference additional headers your program requires here

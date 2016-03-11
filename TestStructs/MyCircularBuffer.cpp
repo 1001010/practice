@@ -36,18 +36,16 @@ void Test_MyMovingAverage_AddOne(TMyMovingAverage &collection, int add, double e
 // BEGIN HACK, TODO: Remove the need for this
 #pragma warning (disable: 4800)  // warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
 
-	double result = collection.add(add);
+	collection.add(add);
 
 #pragma warning (default: 4800)
 // END HACK
 
-	assert(result == collection.average);
-
 	// I don't trust floating point value comparisons
 	int64_t int_expected = int64_t(expected * factor);
-	int64_t int_result   = int64_t(result   * factor);
+	int64_t int_average  = int64_t(collection.average * factor);
 
-	assert(int_expected == int_result);
+	assert(int_expected == int_average);
 }
 
 
@@ -82,6 +80,7 @@ void MyCircularBuffer_UnitTest()
 		{ 9, 6.33, 2 },
 		{ 5, 5.66, 2 },
 	};
+	size_t num_samples_for_3 = ARRAY_SIZE(samples_for_3);
 
 	test_sample samples_for_3_bools[] = {
 		{ 0, 0.00, 2 },
@@ -89,6 +88,7 @@ void MyCircularBuffer_UnitTest()
 		{ 1, 0.66, 2 },
 		{ 1, 1.00, 2 },
 	};
+	size_t num_samples_for_3_bools = ARRAY_SIZE(samples_for_3_bools);
 
 	MyMovingIntegerAverage<bool,     3>  m0;
 	MyMovingIntegerAverage<int,      3>  m1;
@@ -101,12 +101,12 @@ void MyCircularBuffer_UnitTest()
 	//MyMovingIntegerAverage <double, 5> moving_fail_double;
 	//MyMovingIntegerAverage<std::stringbuf, 5> moving_fail_string;
 
-	Test_MyMovingAverage_AddMany(m0, samples_for_3_bools, 4);
-	Test_MyMovingAverage_AddMany(m1, samples_for_3, 4);
-	Test_MyMovingAverage_AddMany(m2, samples_for_3, 4);
-	Test_MyMovingAverage_AddMany(m3, samples_for_3, 4);
-	Test_MyMovingAverage_AddMany(m4, samples_for_3, 4);
-	Test_MyMovingAverage_AddMany(m5, samples_for_3, 4);
-	Test_MyMovingAverage_AddMany(m6, samples_for_3, 4);
-	Test_MyMovingAverage_AddMany(m7, samples_for_3, 4);
+	Test_MyMovingAverage_AddMany(m0, samples_for_3_bools, num_samples_for_3_bools);
+	Test_MyMovingAverage_AddMany(m1, samples_for_3, num_samples_for_3);
+	Test_MyMovingAverage_AddMany(m2, samples_for_3, num_samples_for_3);
+	Test_MyMovingAverage_AddMany(m3, samples_for_3, num_samples_for_3);
+	Test_MyMovingAverage_AddMany(m4, samples_for_3, num_samples_for_3);
+	Test_MyMovingAverage_AddMany(m5, samples_for_3, num_samples_for_3);
+	Test_MyMovingAverage_AddMany(m6, samples_for_3, num_samples_for_3);
+	Test_MyMovingAverage_AddMany(m7, samples_for_3, num_samples_for_3);
 }
