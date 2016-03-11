@@ -7,7 +7,7 @@
 #include "MySearch.h"
 #include "MyMap.h"
 #include "MyCircularBuffer.h"
-#include <assert.h>
+#include "MyHash.h"
 
 int main()
 {
@@ -17,6 +17,7 @@ int main()
 	MySearch_UnitTest();
 	MyMap_UnitTest();
 	MyCircularBuffer_UnitTest();
+	MyHash_UnitTest();
 
 	printf("\nComplete.\n");
     return 0;
