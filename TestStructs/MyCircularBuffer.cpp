@@ -80,9 +80,7 @@ void Test_MyMovingAverage_AddMany(TMyMovingAverage &collection, test_sample_doub
 }
 
 void MyCircularBuffer_UnitTest()
-{
-	//MyCircularBufferFixed<int32_t, 3> cbuf;
-	
+{	
 	MyUncomfortableMovingAverage uncomfortable(3);
 	TestSingleAdd(uncomfortable, 7, 7.00, 2);
 	TestSingleAdd(uncomfortable, 3, 5.00, 2);
@@ -125,6 +123,8 @@ void MyCircularBuffer_UnitTest()
 	Test_MyMovingAverage_AddMany(m6, samples_for_3, num_samples_for_3);
 	Test_MyMovingAverage_AddMany(m7, samples_for_3, num_samples_for_3);
 
+	/////////////////////////////////////////////////
+
 	test_sample_double samples_for_3_floats[] = {
 		{ 0.00f, 0.00, 2 },
 		{ 1.00f, 0.50, 2 },
@@ -135,4 +135,28 @@ void MyCircularBuffer_UnitTest()
 	MyMovingFloatAverage<3> mf0;
 
 	Test_MyMovingAverage_AddMany(mf0, samples_for_3_floats, num_samples_for_3_floats);
+
+	////////////////////////////////////////////////
+
+	MyCircularBufferFixed<int32_t, 3> cbuf;
+	int result_cbuf = 0;
+
+	cbuf.append(1);  // 1??
+	assert(cbuf.get(0, result_cbuf));
+	assert(result_cbuf == 1);
+
+	cbuf.append(2);  // 12?
+	assert(cbuf.get(1, result_cbuf));
+	assert(result_cbuf == 2);
+
+	cbuf.append(3);  // 123
+	assert(cbuf.get(2, result_cbuf));
+	assert(result_cbuf == 3);
+
+	// wrap around point on this 3 element collection
+	cbuf.append(4);  // 423
+	assert(cbuf.get(0, result_cbuf));
+	assert(result_cbuf == 2);
+
+	// TODO: Better use cases
 }

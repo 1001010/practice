@@ -115,7 +115,7 @@ public:
 	const size_t & size;
 
 	// add in a new value
-	bool add(const TIntegerType &new_val)
+	bool add(const TIntegerType &value)
 	{
 		bool result = false;
 
@@ -128,7 +128,7 @@ public:
 			m_total -= m_history[m_position % TWindowSize];
 		}
 
-		if (will_overflow_if_added(m_total, new_val))
+		if (will_overflow_if_added(m_total, value))
 		{
 			// OVERFLOW PROTECTION!  OK - it's not the best protection. It's rather naive.
 			// TODO: Read up on how to best detect overflows. I doubt my (a+b < a) method works across all systems, for larger int types
@@ -139,8 +139,8 @@ public:
 		else
 		{
 			// should be safe to add in
-			m_total += new_val;
-			m_history[m_position++ % TWindowSize] = new_val;
+			m_total += value;
+			m_history[m_position++ % TWindowSize] = value;
 			result = true;
 		}
 
@@ -229,31 +229,38 @@ public:
 };
 
 
+/*
+	An overwriting circular buffer
+	
+	Sample with window size of 2, adding 3 elements [a,b,c]
 
-#if 0 // not ready
+	Starting condition           First add                Second add                Third add
+	[?][?]                       [a][?]                   [a][b]                    [c][b]
+	 +--------m_next                 +------m_next         +--------m_next              +-----m_next
+	 +--------m_size                 +------m_size               +--m_size                 +--m_size
+	
+*/
 template <typename TType, size_t TWindowSize>
 class MyCircularBufferFixed
 {
 protected:
 	TType m_buffer[TWindowSize];
-	size_t m_position;
+	size_t m_next;
 	size_t m_size;
 
 public:
 	const size_t &size;
 
 	MyCircularBufferFixed()
-		: m_position(0)
+		: m_next(0)
 		, m_size(0)
 		, size(m_size)
 	{
-		#pragma message("CAUTION: MyCircularBufferFixed is untested and experimental, waiting for unit tests")
 	}
 
-	void add(const TType &data)
+	void append(const TType &data)
 	{
-		m_buffer[m_position] = data;
-		m_position = (m_position + 1) % TWindowSize;
+		m_buffer[m_next++ % TWindowSize] = data;
 		if (m_size < TWindowSize)
 		{
 			m_size++;
@@ -267,8 +274,11 @@ public:
 			return false;
 		}
 
-		result = m_buffer[(m_position + index) % TWindowSize];
+		if (m_size == TWindowSize)
+		{
+			index = (m_next + index) % TWindowSize;
+		}
+		result = m_buffer[index];
 		return true;
 	}
 };
-#endif //0 not ready
