@@ -8,6 +8,7 @@
 #include "MyMap.h"
 #include "MyCircularBuffer.h"
 #include "MyHash.h"
+#include "MyMathExpressionParser.h"
 
 int main()
 {
@@ -18,6 +19,7 @@ int main()
 	MyMap_UnitTest();
 	MyCircularBuffer_UnitTest();
 	MyHash_UnitTest();
+	MyMathExpressionEvaluator_UnitTest();
 
 	printf("\nComplete.\n");
     return 0;
