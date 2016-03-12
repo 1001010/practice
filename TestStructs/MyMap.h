@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <type_traits>
+#include <string>
 
 void MyMap_UnitTest();
 
@@ -259,10 +260,160 @@ public:
 */
 class MyTries
 {
+	enum 
+	{
+		ALPHABET_SIZE = 26,
+		CHILD_COUNT = ALPHABET_SIZE + 1, // this is where we put all the non a to z words
+	};
+
 	struct Node 
 	{
-		Node *m_children[26];
+		bool  m_is_end;
+		int   m_prefix_count;
+		Node *m_children[CHILD_COUNT];
+
+		Node()
+			: m_is_end(false)
+			, m_prefix_count(0)
+		{
+			memset(m_children, 0, sizeof(m_children));
+		}
 	};
+	typedef Node* NodePtr;
+
+	Node m_head;
+	size_t m_count;
+
+	NodePtr node_new()
+	{
+		m_count++;
+		return new Node();
+	}
+
+	void node_delete(NodePtr &node)
+	{
+		if (node)
+		{
+			assert(m_count);
+			delete node;
+			node = nullptr;
+		}
+	}
+
+	void delete_children(NodePtr node)
+	{
+		for (int i = 0; node && i < CHILD_COUNT; i++)
+		{
+			if (node->m_children[i]) 
+			{
+				delete_children(node->m_children[i]);
+				node_delete(node->m_children[i]);
+				node->m_prefix_count = 0;
+				node->m_is_end = true;
+			}
+		}
+	}
+
+	int letter_to_index(int letter)
+	{
+		letter = tolower(letter);
+		if (letter >= 'a' || letter <= 'z')
+		{
+			return letter - 'a';
+		}
+		// this is where we put all the non a to z characters
+		return CHILD_COUNT - 1;
+	}
+
 public:
 
+	MyTries()
+		: m_count(0)
+	{
+	}
+
+	~MyTries()
+	{
+		delete_children(&m_head);
+	}	
+
+	void insert(const std::string &english_word)
+	{
+		NodePtr current = &m_head;
+		current->m_prefix_count++;
+		for (auto letter : english_word)
+		{
+			int index = letter_to_index(letter);
+			if (current->m_children[index] == nullptr)
+			{
+				current->m_children[index] = node_new();
+			}
+			current->m_children[index]->m_prefix_count++;
+			current = current->m_children[index];
+		}
+		current->m_is_end = true;
+	}
+
+	bool search(const std::string &english_word)
+	{
+		NodePtr current = &m_head;
+		for (auto letter : english_word)
+		{
+			int index = letter_to_index(letter);
+			if (current->m_children[index] == nullptr)
+			{
+				return false;
+			}
+			current = current->m_children[index];
+		}
+		return current->m_is_end;
+	}
+
+	size_t num_words_with_prefix(const std::string &prefix)
+	{
+		NodePtr current = &m_head;
+		for (auto letter : prefix)
+		{
+			int index = letter_to_index(letter);
+			if (current->m_children[index] == nullptr)
+			{
+				return 0;
+			}
+			else
+			{
+				current = current->m_children[index];
+			}
+		}
+		return current->m_prefix_count;
+	}
+
+	std::string next_autocomplete_letters(const std::string &prefix)
+	{
+		std::string result;
+		NodePtr current = &m_head;
+		for (auto letter : prefix)
+		{
+			int index = letter_to_index(letter);
+			if (current->m_children[index] == nullptr)
+			{
+				// dead end
+				return result;
+			}
+			else
+			{
+				current = current->m_children[index];
+			}
+		}
+		if (current->m_prefix_count)
+		{
+			for (int i = 0; i < CHILD_COUNT; i++)
+			{
+				if (current->m_children[i])
+				{
+					result.append(1, char('a' + i));
+				}
+			}
+		}
+		return result;
+	}
 };

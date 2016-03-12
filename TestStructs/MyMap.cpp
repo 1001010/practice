@@ -105,7 +105,42 @@ bool MyBinaryTree_UnitTest()
 	return true;
 }
 
+void MyTries_NextAutoCompleteLetters(MyTries &collection, const std::string &prefix)
+{
+	std::string a1 = collection.next_autocomplete_letters(prefix);
+	printf("Next autocomplete letters for [%s] are [%s]\n", prefix.c_str(), a1.c_str());
+}
+
+void MyTries_UnitTest()
+{
+	printf("\nTESTING MyTries\n");
+
+	MyTries test;
+	test.insert("Rat");
+	test.insert("race");
+	test.insert("r");
+	assert(test.search("r") == true);
+	assert(test.num_words_with_prefix("r") == 3);
+	assert(test.num_words_with_prefix("ra") == 2);
+
+	test.insert("abc");
+	test.insert("alpharomeo");
+	test.insert("alphabeta");
+
+	MyTries_NextAutoCompleteLetters(test, "a");
+	MyTries_NextAutoCompleteLetters(test, "ab");
+	MyTries_NextAutoCompleteLetters(test, "abc");
+	MyTries_NextAutoCompleteLetters(test, "abcd");
+	MyTries_NextAutoCompleteLetters(test, "al");
+	MyTries_NextAutoCompleteLetters(test, "alp");
+	MyTries_NextAutoCompleteLetters(test, "alph");
+	MyTries_NextAutoCompleteLetters(test, "alpha");
+	MyTries_NextAutoCompleteLetters(test, "alphar");
+	MyTries_NextAutoCompleteLetters(test, "alphab");
+}
+
 void MyMap_UnitTest()
 {
 	MyBinaryTree_UnitTest();
+	MyTries_UnitTest();
 }
