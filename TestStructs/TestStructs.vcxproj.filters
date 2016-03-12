@@ -42,6 +42,9 @@
     <ClInclude Include="MyHash.h">
       <Filter>Collections</Filter>
     </ClInclude>
+    <ClInclude Include="MyMathExpressionParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -64,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="MyHash.cpp">
       <Filter>Collections</Filter>
+    </ClCompile>
+    <ClCompile Include="MyMathExpressionParser.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
