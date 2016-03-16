@@ -605,6 +605,48 @@ public:
 	}
 };
 
+class Solution_leet_code_75 {
+	// Sort Colorts
+	// Medium
+	// 6ms
+public:
+	void sortColors(std::vector<int>& nums) 
+	{
+		// sort the array, descending
+		// 2 options: use a premade sort or implement a sort
+		// since I'd rather use something premade and I can't - just do a horrible bubble sort  O(n^2)
+
+		for (int c = 0; c < (nums.size() - 1); c++)
+		{
+			for (int d = 0; d < nums.size() - c - 1; d++)
+			{
+				if (nums[d] > nums[d + 1])
+				{
+					int swap = nums[d];
+					nums[d] = nums[d + 1];
+					nums[d + 1] = swap;
+				}
+			}
+		}
+	}
+
+	Solution_leet_code_75()
+	{
+		printf("Solution_leet_code_75\n");
+		/*
+		Given an array with n objects colored red, white or blue, sort them so that objects of the same color are adjacent, with the colors in the order red, white and blue.
+
+		Here, we will use the integers 0, 1, and 2 to represent the color red, white, and blue respectively.
+
+		Note:
+		You are not suppose to use the library's sort function for this problem.
+		*/
+
+		std::vector<int> nums = { 1,0,2,0,1 };
+		sortColors(nums);
+	}
+};
+
 void MyChallenges_UnitTest()
 {
 	printf("\nTESTING MyChallenges\n");
@@ -616,4 +658,5 @@ void MyChallenges_UnitTest()
 	Solution_random_1      _solution_random_1;
 	Solution_leet_code_229 _solution_leet_code_229;
 	Solution_leet_code_151 _solution_leet_code_151;
+	Solution_leet_code_75  _solution_leet_code_75;
 }
