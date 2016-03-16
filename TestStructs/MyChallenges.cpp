@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <list>
+#include <set>
 
 class Solution_leet_code_242 
 {
@@ -723,6 +724,45 @@ public:
 	}
 };
 
+class Solution_leet_code_287 {
+	// Find the Duplicate Number
+	// Hard?
+	// 36ms
+public:
+	int findDuplicate(std::vector<int>& nums) {
+		std::set<int> dupecheck;
+		for (auto value : nums)
+		{
+			// add it to the set & if it's already in there - we found the dupe
+			auto result = dupecheck.insert(value);
+			if (result.second == false)
+			{
+				return value;
+			}
+		}
+		// Don't like this _at_ _all_
+		// maybe change the result to a boolean and make the &value ref param? or return a pair<value,success>?
+		return -1;
+	}
+
+	Solution_leet_code_287()
+	{
+		printf("Solution_leet_code_287\n");
+		/*
+		Given an array nums containing n + 1 integers where each integer is between 1 and n (inclusive), prove that at least one duplicate number must exist. Assume that there is only one duplicate number, find the duplicate one.
+
+		Note:
+		You must not modify the array (assume the array is read only).
+		You must use only constant, O(1) extra space.
+		Your runtime complexity should be less than O(n2).
+		There is only one duplicate number in the array, but it could be repeated more than once.
+		*/
+
+		std::vector<int> nums = { 1,2,3,2,2,4 };
+		assert( 2 == findDuplicate(nums));
+	}
+};
+
 void MyChallenges_UnitTest()
 {
 	printf("\nTESTING MyChallenges\n");
@@ -736,4 +776,5 @@ void MyChallenges_UnitTest()
 	Solution_leet_code_151 _solution_leet_code_151;
 	Solution_leet_code_75  _solution_leet_code_75;
 	Solution_random_2      _Solution_random_2;
+	Solution_leet_code_287 _Solution_leet_code_287;
 }
