@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <list>
 
 class Solution_leet_code_242 
 {
@@ -26,6 +27,7 @@ public:
 
 	Solution_leet_code_242()
 	{
+		printf("Solution_leet_code_242\n");
 		/*
 		Given two strings s and t, write a function to determine if t is an anagram of s.
 
@@ -51,6 +53,7 @@ public:
 
 	Solution_leet_code_27()
 	{
+		printf("Solution_leet_code_27\n");
 		/*
 		Given an array and a value, remove all instances of that value in place and return the new length.
 
@@ -99,6 +102,7 @@ public:
 
 	Solution_leet_code_283()
 	{
+		printf("Solution_leet_code_283\n");
 		/*
 		Given an array nums, write a function to move all 0's to the end of it while maintaining the relative order of the non-zero elements.
 
@@ -141,6 +145,7 @@ public:
 
 	Solution_leet_code_258()
 	{
+		printf("Solution_leet_code_258\n");
 		/*
 		Given a non-negative integer num, repeatedly add all its digits until the result has only one digit.
 
@@ -254,6 +259,7 @@ public:
 
 	Solution_leet_code_65()
 	{
+		printf("Solution_leet_code_65\n");
 		/*
 		Validate if a given string is numeric.
 
@@ -334,6 +340,7 @@ public:
 
 	Solution_random_1()
 	{
+		printf("Solution_random_1\n");
 		// pretend that this lambda/data set is the code that deploys 2 builds, runs them, and compares the results
 		std::vector<int> values;
 		int count = 0;
@@ -449,6 +456,7 @@ public:
 
 	Solution_leet_code_229()
 	{
+		printf("Solution_leet_code_229\n");
 		/*
 		Given an integer array of size n, find all elements that appear more than [n/3] times. The algorithm should run in linear time and in O(1) space
 		*/
@@ -469,6 +477,133 @@ public:
 	}
 };
 
+class Solution_leet_code_151 {
+public:
+	// 8ms, Medium
+	void reverseWords(std::string &s) {
+		/*
+		Note: The naive python way is
+		s = " ".join(s.split(" ")[::-1])
+		*/
+
+		// Keep track of the positions of all the words/spaces in the source string
+		struct Node {
+			size_t pos;
+			size_t len;
+			int is_space;
+
+			Node() 
+			{ 
+				reset(); 
+			}
+			void reset() 
+			{
+				pos = len = std::string::npos;
+				is_space = -1;
+			}
+		};
+		std::list<Node> nodes;
+
+		Node node;
+		for (size_t i = 0; i < s.length(); i++)
+		{
+			int is_space = (s[i] == ' ');
+		
+			if (node.is_space != is_space)
+			{
+				// change in state
+				if (node.pos != std::string::npos)
+				{
+					node.len = i - node.pos;
+					nodes.push_front(node);
+					node.reset();
+				}
+
+				// start the next node
+				node.pos = i;
+				node.is_space = is_space;
+			}
+		}
+		if (node.pos != std::string::npos && node.is_space == 0)
+		{
+			node.len = s.length() - node.pos;
+			nodes.push_front(node);
+		}
+
+		std::string result;
+		for (auto it = nodes.begin(); it != nodes.end(); it++)
+		{
+			if (it->is_space)
+			{
+				// no leading/trailing spaces
+				if (it == nodes.begin() || it == --nodes.end() )
+					continue;
+
+				// spaces get shortened? seems odd, but whatever
+				it->len = 1;
+			}
+
+			result.append(s.c_str() + it->pos, it->len);
+		}
+
+		// update the param with the new result
+		s = result;
+	}
+
+	Solution_leet_code_151()
+	{
+		printf("Solution_leet_code_151\n");
+		/*
+		Given an input string, reverse the string word by word.
+
+		For example,
+		Given s = "the sky is blue",
+		return "blue is sky the".
+		*/
+
+		{
+			std::string value = "the sky is blue";
+			std::string expected = "blue is sky the";
+			reverseWords(value);
+			assert(value == expected);
+		}
+
+		{
+			std::string before = "";
+			std::string after = "";
+			reverseWords(before);
+			assert(before == after);
+		}
+
+		{
+			std::string before = "a";
+			std::string after = "a";
+			reverseWords(before);
+			assert(before == after);
+		}
+
+		{
+			std::string before = " ";
+			std::string after = "";
+			reverseWords(before);
+			assert(before == after);
+		}
+
+		{
+			std::string before = " 1";
+			std::string after = "1";
+			reverseWords(before);
+			assert(before == after);
+		}
+
+		{
+			std::string before = "1 ";
+			std::string after = "1";
+			reverseWords(before);
+			assert(before == after);
+		}
+	}
+};
 
 void MyChallenges_UnitTest()
 {
@@ -480,4 +615,5 @@ void MyChallenges_UnitTest()
 	Solution_leet_code_65  _solution_leet_code_65;
 	Solution_random_1      _solution_random_1;
 	Solution_leet_code_229 _solution_leet_code_229;
+	Solution_leet_code_151 _solution_leet_code_151;
 }
