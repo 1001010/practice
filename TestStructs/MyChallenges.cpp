@@ -647,6 +647,82 @@ public:
 	}
 };
 
+class Solution_random_2
+{
+public:
+	bool IncrementLicensePlate(std::string &lastPlate)
+	{
+		for (auto it = lastPlate.rbegin(); it != lastPlate.rend(); it++)
+		{
+			switch (*it)
+			{
+			case 'Z':
+				*it = 'A';
+				break;
+
+			case 'z':
+				*it = 'a';
+				break;
+
+			case '9':
+				*it = '0';
+				break;
+
+			default:
+				if (!isdigit(*it) && !isalpha(*it))
+				{
+					//assert(!"unable to handle specialty symbol plates at this time");
+					return false;
+				}
+				(*it)++;
+				return true;
+			}	
+		}
+		return false;
+	}
+
+	Solution_random_2()
+	{
+		printf("Solution_random_2\n");
+		/*
+		Given a vehicle license plate from the state DMV, get the next plate in the sequence.
+		Don't take too long, those prisoners get anxious when they have nothing to do.
+		Note: Plates have a fixed number of symbols and each position can be 0-9 or A-Z
+		*/
+		struct Test {
+			std::string convert;
+			std::string expected;
+			bool shouldPass;
+		};
+		Test test_cases[] = {
+			{ "1ABC1234", "1ABC1235", true  },
+			{ "1",        "2",        true  },
+			{ "9",        "9",        false },
+			{ "A",        "B",        true  },
+			{ "Z",        "Z",        false },
+			{ "1ABC9999", "1ABD0000", true  },
+			{ "1ZZZ9999", "2AAA0000", true  },
+			{ "9ZZZ9999", "9ZZZ9999", false },
+			{ "?ZZZ9999", "?ZZZ9999", false },
+		};
+
+		for (int i = 0; i < sizeof(test_cases) / sizeof(test_cases[0]); i++)
+		{
+			std::string temp = test_cases[i].convert;
+			bool result = IncrementLicensePlate(temp);
+			if (test_cases[i].shouldPass) 
+			{
+				assert(result);
+				assert(temp == test_cases[i].expected);
+			}
+			else 
+			{
+				assert(!result);
+			}
+		}
+	}
+};
+
 void MyChallenges_UnitTest()
 {
 	printf("\nTESTING MyChallenges\n");
@@ -659,4 +735,5 @@ void MyChallenges_UnitTest()
 	Solution_leet_code_229 _solution_leet_code_229;
 	Solution_leet_code_151 _solution_leet_code_151;
 	Solution_leet_code_75  _solution_leet_code_75;
+	Solution_random_2      _Solution_random_2;
 }
