@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "MyChallenges.h"
 #include <assert.h>
 #include <string>
@@ -419,6 +419,57 @@ public:
 	}
 };
 
+class Solution_leet_code_229 {
+public:
+	std::vector<int> majorityElement(std::vector<int>& nums) 
+	{
+		// 28ms
+		typedef std::map<int, int> ValueToCount;
+		ValueToCount track;
+		for (size_t index = 0; index < nums.size(); index++)
+		{
+			track[nums[index]]++;
+		}
+
+		std::vector<int> result;
+		result.reserve(nums.size());
+
+		size_t threshold = nums.size() / 3;
+
+		for (ValueToCount::iterator it = track.begin(); it != track.end(); it++)
+		{
+			if (it->second > threshold)
+			{
+				result.push_back(it->first);
+			}
+		}
+
+		return result;
+	}
+
+	Solution_leet_code_229()
+	{
+		/*
+		Given an integer array of size n, find all elements that appear more than [n/3] times. The algorithm should run in linear time and in O(1) space
+		*/
+
+		{
+			std::vector<int> nums = { 1, 1, 1, 1, 2, 2, 3, 3 };
+			std::vector<int> result = majorityElement(nums);
+			assert(result.size() == 1);
+			assert(result[0] == 1);
+		}
+
+		{
+			std::vector<int> nums = { 2,2 };
+			std::vector<int> result = majorityElement(nums);
+			assert(result.size() == 1);
+			assert(result[0] == 2);
+		}
+	}
+};
+
+
 void MyChallenges_UnitTest()
 {
 	printf("\nTESTING MyChallenges\n");
@@ -428,4 +479,5 @@ void MyChallenges_UnitTest()
 	Solution_leet_code_258 _solution_leet_code_258;
 	Solution_leet_code_65  _solution_leet_code_65;
 	Solution_random_1      _solution_random_1;
+	Solution_leet_code_229 _solution_leet_code_229;
 }
