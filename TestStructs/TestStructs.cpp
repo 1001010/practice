@@ -9,6 +9,7 @@
 #include "MyCircularBuffer.h"
 #include "MyHash.h"
 #include "MyMathExpressionParser.h"
+#include "MyChallenges.h"
 
 int main()
 {
@@ -20,6 +21,7 @@ int main()
 	MyCircularBuffer_UnitTest();
 	MyHash_UnitTest();
 	MyMathExpressionEvaluator_UnitTest();
+	MyChallenges_UnitTest();
 
 	printf("\nComplete.\n");
     return 0;
