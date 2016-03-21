@@ -48,6 +48,9 @@
     <ClInclude Include="MyChallenges.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyLatinSquare.h">
+      <Filter>Collections</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="MyChallenges.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLatinSquare.cpp">
+      <Filter>Collections</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

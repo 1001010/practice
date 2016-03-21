@@ -10,6 +10,7 @@
 #include "MyHash.h"
 #include "MyMathExpressionParser.h"
 #include "MyChallenges.h"
+#include "MyLatinSquare.h"
 
 int main()
 {
@@ -22,6 +23,7 @@ int main()
 	MyHash_UnitTest();
 	MyMathExpressionEvaluator_UnitTest();
 	MyChallenges_UnitTest();
+	MyLatinSquare_UnitTest();
 
 	printf("\nComplete.\n");
     return 0;

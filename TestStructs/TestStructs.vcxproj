@@ -144,6 +144,7 @@
     <ClInclude Include="MyChallenges.h" />
     <ClInclude Include="MyCircularBuffer.h" />
     <ClInclude Include="MyHash.h" />
+    <ClInclude Include="MyLatinSquare.h" />
     <ClInclude Include="MyList.h" />
     <ClInclude Include="MyMap.h" />
     <ClInclude Include="MyMathExpressionParser.h" />
@@ -155,6 +156,7 @@
     <ClCompile Include="MyChallenges.cpp" />
     <ClCompile Include="MyCircularBuffer.cpp" />
     <ClCompile Include="MyHash.cpp" />
+    <ClCompile Include="MyLatinSquare.cpp" />
     <ClCompile Include="MyList.cpp" />
     <ClCompile Include="MyMap.cpp" />
     <ClCompile Include="MyMathExpressionParser.cpp" />
