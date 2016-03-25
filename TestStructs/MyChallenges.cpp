@@ -763,6 +763,98 @@ public:
 	}
 };
 
+class Solution_random_3
+{
+public:
+	bool FlipBit(uint8_t *bytes, size_t byte_len, int16_t offset)
+	{
+		if (!bytes || !byte_len || offset < 0)
+		{
+			//assert(!"Bad params");
+			return false;
+		}
+
+		int byte_pos = offset / 8;
+		if (byte_pos >= byte_len)
+		{
+			//assert(!"offset is out of bounds");
+			return false;
+		}
+
+		int bitmask = 1 << (offset % 8);
+
+		bytes[byte_pos] ^= bitmask;
+
+		return true;
+	}
+
+	bool TestFlipBit(std::vector<uint8_t> &modify, int16_t offset, const std::vector<uint8_t> &expected_collection, bool expected_result)
+	{
+		bool result = FlipBit(&modify[0], modify.size(), offset);
+		if (result != expected_result)
+		{
+			assert(!"That is not the result I was expecting");
+			return false;
+		}
+
+		if (result)
+		{
+			if (modify.size() != expected_collection.size())
+			{
+				assert(!"Why did the size change?");
+				return false;
+			}
+
+			for (size_t index = 0; index < modify.size(); index++)
+			{
+				if (modify[index] != expected_collection[index])
+				{
+					assert(!"That was not expected, the wrong bit was changed!");
+					return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
+	Solution_random_3()
+	{
+		printf("Solution_random_3\n");
+		// Flip a bit at an offset in a byte array
+
+		{
+			std::vector<uint8_t> modify   = { 0x00 };
+			std::vector<uint8_t> expected = { 0x01 };
+			TestFlipBit(modify, 0, expected, true);
+		}
+
+		{
+			std::vector<uint8_t> modify   = { 0x01 };
+			std::vector<uint8_t> expected = { 0x00 };
+			TestFlipBit(modify, 0, expected, true);
+		}
+
+		{
+			std::vector<uint8_t> modify = { 0x01 };
+			std::vector<uint8_t> expected = { 0x00 };
+			TestFlipBit(modify, -1, expected, false);
+		}
+
+		{
+			std::vector<uint8_t> modify = { 0x00, 0x00 };
+			std::vector<uint8_t> expected = { 0x00, 0x01 };
+			TestFlipBit(modify, 8, expected, true);
+		}
+
+		{
+			std::vector<uint8_t> modify = { 0x00, 0x00 };
+			std::vector<uint8_t> expected = { 0x00, 0x01 };
+			TestFlipBit(modify, 16, expected, false);
+		}
+	}
+};
+
 void MyChallenges_UnitTest()
 {
 	printf("\nTESTING MyChallenges\n");
@@ -777,4 +869,5 @@ void MyChallenges_UnitTest()
 	Solution_leet_code_75  _solution_leet_code_75;
 	Solution_random_2      _Solution_random_2;
 	Solution_leet_code_287 _Solution_leet_code_287;
+	Solution_random_3      _Solution_random_3;
 }
