@@ -11,6 +11,7 @@
 #include "MyMathExpressionParser.h"
 #include "MyChallenges.h"
 #include "MyLatinSquare.h"
+#include "MyBattleship.h"
 
 int main()
 {
@@ -24,6 +25,7 @@ int main()
 	MyMathExpressionEvaluator_UnitTest();
 	MyChallenges_UnitTest();
 	MyLatinSquare_UnitTest();
+	MyBattleship_UnitTest();
 
 	printf("\nComplete.\n");
     return 0;

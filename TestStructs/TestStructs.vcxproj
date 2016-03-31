@@ -141,6 +141,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MyBattleship.h" />
     <ClInclude Include="MyChallenges.h" />
     <ClInclude Include="MyCircularBuffer.h" />
     <ClInclude Include="MyHash.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MyBattleship.cpp" />
     <ClCompile Include="MyChallenges.cpp" />
     <ClCompile Include="MyCircularBuffer.cpp" />
     <ClCompile Include="MyHash.cpp" />
