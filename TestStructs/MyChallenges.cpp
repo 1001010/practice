@@ -813,9 +813,8 @@ public:
 					return false;
 				}
 			}
-
-			return true;
 		}
+		return result;
 	}
 
 	Solution_random_3()
@@ -855,6 +854,506 @@ public:
 	}
 };
 
+
+class Solution_turtle_simulator
+{
+	/*
+		Let's play with Turtle! (or anti-nascar slow tron light cycles without a tail wall)
+		Each exposed explicit movement action will log the movement for undo
+		Actions
+			MoveForward
+				Based upon the direction, will move the turtle forward
+			TurnRight
+				Changes direction 90deg to the right
+			ExecuteSequence
+				Allows for programmed sequences of commands
+				Samples
+					FFR   = Forward Forward TurnRight
+					3F    = Forward Forward Forward
+					3[FR] = Forward TurnRight Forward TurnRight Forward TurnRight
+					2[RF2[F]2R]2[RR] can be nested
+	*/
+public:
+	struct Point 
+	{
+		int32_t x;
+		int32_t y;
+		Point(int32_t x = 0, int32_t y = 0) 
+			: x(x)
+			, y(y)
+		{}
+		Point operator-(const Point &other) const
+		{
+			return Point(x - other.x, y - other.y);
+		}
+		Point operator+(const Point &other) const
+		{
+			return Point(x + other.x, y + other.y);
+		}
+		bool operator!=(const Point &other) const
+		{
+			return x != other.x || y != other.y;
+		}
+		bool operator==(const Point &other) const
+		{
+			return x == other.x && y == other.y;
+		}
+		Point& operator+=(const Point &other)
+		{
+			x += other.x;
+			y += other.y;
+			return *this;
+		}
+		Point& operator-=(const Point &other)
+		{
+			x -= other.x;
+			y -= other.y;
+			return *this;
+		}
+	};
+
+	enum class Rotation {
+		North = 0,
+		East  = 90,
+		South = 180,
+		West  = 270,
+		FULL_CIRCLE = 360,
+	};
+
+	struct Direction
+	{
+		// Operators on an 'enum class' are not allowed, so we wrap it and put the operators here
+		Rotation angle = Rotation::North;
+
+		Rotation AddRotations(const Rotation &lhs, const Rotation &rhs) const
+		{
+			int value = ((int)lhs + (int)rhs) % (int)Rotation::FULL_CIRCLE;
+			if (value < 0)
+			{
+				value += (int)Rotation::FULL_CIRCLE;
+			}
+			return (Rotation)value;
+		}
+
+		Direction(Rotation r = Rotation::North) : angle(r) {}
+		Direction(const Direction &copy) : angle(copy.angle) {}
+
+		Direction operator+(const Direction &other) const
+		{
+			return AddRotations(angle, other.angle);
+		}
+
+		Direction operator-(const Direction &other) const
+		{
+			return AddRotations(angle, (Rotation)-(int)other.angle);
+		}
+
+		bool operator!=(const Direction &other) const
+		{
+			return angle != other.angle;
+		}
+
+		bool operator==(const Direction &other) const
+		{
+			return angle == other.angle;
+		}
+	};
+
+protected:
+	Point     m_point;
+	Direction m_direction;
+
+	struct PositionState
+	{
+		Point     m_point;
+		Direction m_direction;
+		uint32_t  m_modifiedMask;
+
+		enum Modified {
+			MPOINT     = 0x01,
+			MDIRECTION = 0x02,
+		};
+
+		PositionState()                             : m_modifiedMask(0) {}
+		PositionState(const Point &pt, Direction d) : m_modifiedMask(MPOINT|MDIRECTION), m_point(pt), m_direction(d) {}
+
+		bool HasModifiedMember(Modified mask) const 
+		{ 
+			return (m_modifiedMask & mask) == mask;
+		}
+	};
+	std::list<PositionState> m_undoLog;
+
+	// success, delta
+	typedef std::pair<bool, PositionState> ResultPair;
+
+	// helper for getting deltas to put in the m_undoLog
+	PositionState internalCalcDelta(const Point &oldPoint, Direction oldDirection)
+	{
+		PositionState result;
+
+		if (oldPoint != m_point)
+		{
+			result.m_modifiedMask |= PositionState::Modified::MPOINT;
+			result.m_point = Point(oldPoint - m_point);
+		}
+
+		if (oldDirection != m_direction)
+		{
+			result.m_modifiedMask |= PositionState::Modified::MDIRECTION;
+			result.m_direction = (oldDirection - m_direction);
+		}
+
+		return result;
+	};
+
+	// Does not log history
+	ResultPair internalMoveForward()
+	{
+		Point oldPoint = m_point;
+		bool success = true;
+
+		switch (m_direction.angle)
+		{
+		case Rotation::North: m_point.x++; break;
+		case Rotation::East:  m_point.y++; break;
+		case Rotation::South: m_point.x--; break;
+		case Rotation::West:  m_point.y--; break;
+		default:
+			assert(!"unsupported rotation");
+			success = false;
+		}
+
+		// there was talk of limiting movement to the visible screen
+		if (m_point.x < 0 || m_point.y < 0)
+		{
+			success = false;
+		}
+
+		return ResultPair(success, internalCalcDelta(oldPoint, m_direction));
+	}
+
+	// Does not log history
+	ResultPair internalTurnRight()
+	{
+		Direction oldDirection = m_direction;
+		m_direction = m_direction + Rotation::East;
+		return ResultPair(true, internalCalcDelta(m_point, oldDirection));
+	}
+
+	// Does not log history
+	ResultPair internalExecuteSequence(const std::string &commands)
+	{
+		// Sample command sequences
+		// FFR   = Forward Forward TurnRight
+		// 3F    = Forward Forward Forward
+		// 3[FR] = Forward TurnRight Forward TurnRight Forward TurnRight
+		// 2[RF2[F]2R]2[RR] can be nested
+
+		// Save off our current state
+		Point oldPoint = m_point;
+		Direction oldDirection = m_direction;
+
+		// iterate over the command string
+		size_t count = 0;
+		for (size_t index = 0; index < commands.size(); index++)
+		{
+			if (count > UINT16_MAX)
+			{
+				assert(!"Taking a wild stab in the dark & presuming that this is a bug");
+				return ResultPair(false, internalCalcDelta(oldPoint, oldDirection));
+			}
+
+			// Leading base 10 number?
+			if (commands[index] >= '0' && commands[index] <= '9')
+			{
+				// multidigit number?
+				if (count > 0)
+				{
+					count *= 10;
+				}
+
+				count += commands[index] - '0';
+				continue;
+			}
+
+			// Implicit One
+			if (count < 1)
+			{
+				count = 1;
+			}
+
+			if (commands[index] == ']')
+			{
+				assert(!"We should never hit this");
+				return ResultPair(false, internalCalcDelta(oldPoint, oldDirection));
+			}
+
+			if (commands[index] == '[')
+			{
+				// we need to run this next block 'count' times
+				// scan ahead to find end of this block
+				int depth = 1;
+				size_t search = index + 1;
+				while (depth && search < commands.size())
+				{
+					if (commands[search] == '[')
+					{
+						depth++;
+					}
+					else if (commands[search] == ']')
+					{
+						depth--;
+					}
+					search++;
+				}
+				if (depth)
+				{
+					assert(!"mismatched braces!");
+					return ResultPair(false, internalCalcDelta(oldPoint, oldDirection));
+				}
+
+				// get the substring [between the braces] and execute it recursively
+				std::string substring(commands.c_str() + 1 + index, search - index - 2);
+				while (count)
+				{
+					count--;
+					internalExecuteSequence(substring);
+				}
+
+				// set index to the last brace, to be skipped over in the outer for-loop
+				index = search - 1;
+				continue;
+			}
+
+			// Finaly do the work of moving the turtle about
+			while (count)
+			{
+				count--;
+
+				switch (commands[index])
+				{
+				case 'F':
+					internalMoveForward();
+					break;
+
+				case 'R':
+					internalTurnRight();
+					break;
+
+				default:
+					assert(!"that was unexpected");
+					return ResultPair(false, internalCalcDelta(oldPoint, oldDirection));
+				}
+			}
+		}
+
+		return ResultPair(true, internalCalcDelta(oldPoint, oldDirection));
+	}
+
+public:
+
+	Point CurrentLocation() const
+	{
+		return m_point;
+	}
+
+	Rotation CurrentRotation() const
+	{
+		return m_direction.angle;
+	}
+
+	//
+	// Turtles are slow, they move 1 position at a time
+	//
+	void MoveForward()
+	{
+		// Make the change and log it
+		PositionState rollback(m_point, m_direction);
+		ResultPair result = internalMoveForward();
+		if (result.first)
+		{
+			m_undoLog.push_front(result.second);
+		}
+		else
+		{
+			// invalid movement, put it back
+			m_point = rollback.m_point;
+			m_direction = rollback.m_direction;
+		}
+	}
+
+	//
+	// Rotate 90deg to the right
+	//
+	void TurnRight()
+	{
+		// Make the change and log it
+		ResultPair result = internalTurnRight();
+		m_undoLog.push_front(result.second);
+	}
+
+	//
+	// Provide a command string instead of making manual turn and move calls yourself
+	//
+	void ExecuteSequence(const std::string &commands)
+	{
+		PositionState rollback(m_point, m_direction);
+		ResultPair result = internalExecuteSequence(commands);
+		if (result.first)
+		{
+			m_undoLog.push_front(result.second);
+		}
+		else
+		{
+			// invalid movement, put it back
+			m_point = rollback.m_point;
+			m_direction = rollback.m_direction;
+		}
+	}
+
+	bool IsUndoEmpty() const
+	{
+		return m_undoLog.empty();
+	}
+
+	void UndoAll()
+	{
+		while (!IsUndoEmpty())
+		{
+			Undo();
+		}
+	}
+
+	void Reset()
+	{
+		m_direction.angle = Rotation::North;
+		m_point.x = m_point.y = 0;
+		m_undoLog.clear();
+	}
+
+	//
+	// Pop the stack of TurnRight, MoveForward, and ExecuteSequence calls
+	//
+	void Undo()
+	{
+		auto it = m_undoLog.begin();
+		if (it == m_undoLog.end())
+		{
+			// nothing to undo
+			return;
+		}
+
+		// pop the delta off the history
+		PositionState change = *it;
+		m_undoLog.erase(it);
+
+		// apply the delta
+		if (change.HasModifiedMember(PositionState::Modified::MDIRECTION))
+		{
+			m_direction = m_direction + change.m_direction;
+		}
+
+		if (change.HasModifiedMember(PositionState::Modified::MPOINT))
+		{
+			m_point += change.m_point;
+		}
+	}
+
+	Solution_turtle_simulator()
+	{
+		printf("Solution_turtle_simulator\n");
+
+		Reset();
+
+		auto VerifyUndoAll = [&]() {
+			UndoAll();
+			assert(CurrentRotation() == Rotation::North);
+			assert(CurrentLocation() == Point(0, 0));
+		};
+
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(0, 0));
+		MoveForward();
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(1, 0));
+		TurnRight();
+		assert(CurrentRotation() == Rotation::East);
+		TurnRight();
+		assert(CurrentRotation() == Rotation::South);
+		TurnRight();
+		assert(CurrentRotation() == Rotation::West);
+		TurnRight();
+		assert(CurrentRotation() == Rotation::North);
+		Undo();
+		assert(CurrentRotation() == Rotation::West);
+		TurnRight();
+		assert(CurrentRotation() == Rotation::North);
+
+		UndoAll();
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(0, 0));
+
+		// command sequences
+		ExecuteSequence("F");
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(1, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("FF");
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(2, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("2F");
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(2, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("R");
+		assert(CurrentRotation() == Rotation::East);
+		assert(CurrentLocation() == Point(0, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("RR");
+		assert(CurrentRotation() == Rotation::South);
+		assert(CurrentLocation() == Point(0, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("2R");
+		assert(CurrentRotation() == Rotation::South);
+		assert(CurrentLocation() == Point(0, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("4R");
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(0, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("1F1RF");
+		assert(CurrentRotation() == Rotation::East);
+		assert(CurrentLocation() == Point(1, 1));
+
+		VerifyUndoAll();
+		ExecuteSequence("3[F]");
+		assert(CurrentRotation() == Rotation::North);
+		assert(CurrentLocation() == Point(3, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("3[F]2R");
+		assert(CurrentRotation() == Rotation::South);
+		assert(CurrentLocation() == Point(3, 0));
+
+		VerifyUndoAll();
+		ExecuteSequence("3[F]1R10[F]5F");
+		assert(CurrentRotation() == Rotation::East);
+		assert(CurrentLocation() == Point(3, 15));
+
+		// Put it all back
+		VerifyUndoAll();
+	}
+};
+
 void MyChallenges_UnitTest()
 {
 	printf("\nTESTING MyChallenges\n");
@@ -870,4 +1369,5 @@ void MyChallenges_UnitTest()
 	Solution_random_2      _Solution_random_2;
 	Solution_leet_code_287 _Solution_leet_code_287;
 	Solution_random_3      _Solution_random_3;
+	Solution_turtle_simulator _Solution_turtle_simulator;
 }
