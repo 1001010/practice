@@ -59,7 +59,7 @@ static BoatDefinition s_boatDefs[NUM_BOATS] = {
 	{ boatJetSki,          1, "JetSki" },
 };
 
-bool IsLocationOnMap(const Point &loc, int fieldSize)
+bool IsLocationOnMap(const Point &loc, size_t fieldSize)
 {
 	return (loc.x >= 0 && loc.x < fieldSize && loc.y >= 0 && loc.y < fieldSize);
 }
@@ -83,7 +83,7 @@ bool ExpandLocationPoints(BoatType boat, Point startLoc, Direction direction, in
 
 	Point pin = startLoc;
 
-	for (int offset = 0; offset < s_boatDefs[boat].m_size; offset++)
+	for (int offset = 0; offset < (int)s_boatDefs[boat].m_size; offset++)
 	{
 		switch (direction)
 		{

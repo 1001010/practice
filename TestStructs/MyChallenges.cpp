@@ -183,7 +183,7 @@ public:
 		int pos_exponent = -1;
 		size_t num_digits = 0;
 		
-		for (int i = 0; i < s_length; i++)
+		for (int i = 0; i < (int)s_length; i++)
 		{
 			// Is it a digit?
 			if (s[i] >= '0' && s[i] <= '9')
@@ -347,8 +347,8 @@ public:
 		int count = 0;
 		auto isLastWorseThanFirst = [&](int first, int last) {
 			count++;
-			assert(first >= 0 && first < values.size());
-			assert(last >= 0 && last < values.size());
+			assert(first >= 0 && first < (int)values.size());
+			assert(last >= 0 && last < (int)values.size());
 			if (values[last] > values[first])
 				return true;
 			return false;
@@ -446,7 +446,7 @@ public:
 
 		for (ValueToCount::iterator it = track.begin(); it != track.end(); it++)
 		{
-			if (it->second > threshold)
+			if (it->second > (int)threshold)
 			{
 				result.push_back(it->first);
 			}
@@ -617,9 +617,9 @@ public:
 		// 2 options: use a premade sort or implement a sort
 		// since I'd rather use something premade and I can't - just do a horrible bubble sort  O(n^2)
 
-		for (int c = 0; c < (nums.size() - 1); c++)
+		for (size_t c = 0; c < (nums.size() - 1); c++)
 		{
-			for (int d = 0; d < nums.size() - c - 1; d++)
+			for (size_t d = 0; d < nums.size() - c - 1; d++)
 			{
 				if (nums[d] > nums[d + 1])
 				{
@@ -774,7 +774,7 @@ public:
 			return false;
 		}
 
-		int byte_pos = offset / 8;
+		size_t byte_pos = offset / 8;
 		if (byte_pos >= byte_len)
 		{
 			//assert(!"offset is out of bounds");
@@ -1354,9 +1354,433 @@ public:
 	}
 };
 
+class Solution_BreakingBad_name_finder
+{
+public:
+	struct ElementDetail {
+		int16_t      number;
+		double       weight;
+		std::string  name;
+		std::string  symbol;
+	} m_elementDetails[119] = {
+		{ 0,     0.0000, "",               ""    },  // skip for sanity. Rest pulled from http://www.science.co.il/PTelements.asp & https://en.wikipedia.org/wiki/List_of_elements
+		{ 1,     1.0079, "Hydrogen",       "H"   },
+		{ 2,     4.0026, "Helium",         "He"  },
+		{ 3,     6.9410, "Lithium",  	   "Li"  },
+		{ 4,     9.0122, "Beryllium",	   "Be"  },
+		{ 5,    10.8110, "Boron",   	   "B"   },
+		{ 6,    12.0107, "Carbon",  	   "C"   },
+		{ 7,    14.0067, "Nitrogen",	   "N"   },
+		{ 8,    15.9994, "Oxygen",  	   "O"   },
+		{ 9,    18.9984, "Fluorine",	   "F"   },
+		{ 10,   20.1797, "Neon",           "Ne"  },
+		{ 11,   22.9897, "Sodium",  	   "Na"  },
+		{ 12,   24.3050, "Magnesium",	   "Mg"  },
+		{ 13,   26.9815, "Aluminum",	   "Al"  },
+		{ 14,   28.0855, "Silicon",  	   "Si"  },
+		{ 15,   30.9738, "Phosphorus",	   "P"   },
+		{ 16,   32.0650, "Sulfur",  	   "S"   },
+		{ 17,   35.4530, "Chlorine",	   "Cl"  },
+		{ 18,   39.9480, "Argon",    	   "Ar"  },
+		{ 19,   39.0983, "Potassium",	   "K"   },
+		{ 20,   40.0780, "Calcium",  	   "Ca"  },
+		{ 21,   44.9559, "Scandium",	   "Sc"  },
+		{ 22,   47.8670, "Titanium",	   "Ti"  },
+		{ 23,   50.9415, "Vanadium",	   "V"   },
+		{ 24,   51.9961, "Chromium",	   "Cr"  },
+		{ 25,   54.9380, "Manganese",	   "Mn"  },
+		{ 26,   55.8450, "Iron",    	   "Fe"  },
+		{ 27,   58.9332, "Cobalt",   	   "Co"  },
+		{ 28,   58.6934, "Nickel",	       "Ni"  },
+		{ 29,   63.5460, "Copper",	       "Cu"  },
+		{ 30,   65.3900, "Zinc",	       "Zn"  },
+		{ 31,   69.7230, "Gallium",	       "Ga"  },
+		{ 32,   72.6400, "Germanium",	   "Ge"  },
+		{ 33,   74.9216, "Arsenic",  	   "As"  },
+		{ 34,   78.9600, "Selenium",	   "Se"  },
+		{ 35,   79.9040, "Bromine",  	   "Br"  },
+		{ 36,   83.8000, "Krypton",  	   "Kr"  },
+		{ 37,   85.4678, "Rubidium",	   "Rb"  },
+		{ 38,   87.6200, "Strontium",	   "Sr"  },
+		{ 39,   88.9059, "Yttrium", 	   "Y"   },
+		{ 40,   91.2240, "Zirconium",	   "Zr"  },
+		{ 41,   92.9064, "Niobium",  	   "Nb"  },
+		{ 42,   95.9400, "Molybdenum",	   "Mo"  },
+		{ 43,   98.0000, "Technetium",	   "Tc"  },
+		{ 44,  101.0700, "Ruthenium",	   "Ru"  },
+		{ 45,  102.9055, "Rhodium", 	   "Rh"  },
+		{ 46,  106.4200, "Palladium",	   "Pd"  },
+		{ 47,  107.8682, "Silver",  	   "Ag"  },
+		{ 48,  112.4110, "Cadmium",  	   "Cd"  },
+		{ 49,  114.8180, "Indium",   	   "In"  },
+		{ 50,  118.7100, "Tin",     	   "Sn"  },
+		{ 51,  121.7600, "Antimony",	   "Sb"  },
+		{ 52,  127.6000, "Tellurium",	   "Te"  },
+		{ 53,  126.9045, "Iodine",     	   "I"   },
+		{ 54,  131.2930, "Xenon", 	       "Xe"  },
+		{ 55,  132.9055, "Cesium",     	   "Cs"  },
+		{ 56,  137.3270, "Barium",     	   "Ba"  },
+		{ 57,  138.9055, "Lanthanum",	   "La"  },
+		{ 58,  140.1160, "Cerium",   	   "Ce"  },
+		{ 59,  140.9077, "Praseodymium",   "Pr"  },
+		{ 60,  144.2400, "Neodymium",	   "Nd"  },
+		{ 61,  145.0000, "Promethium",	   "Pm"  },
+		{ 62,  150.3600, "Samarium",	   "Sm"  },
+		{ 63,  151.9640, "Europium",	   "Eu"  },
+		{ 64,  157.2500, "Gadolinium",	   "Gd"  },
+		{ 65,  158.9253, "Terbium",  	   "Tb"  },
+		{ 66,  162.5000, "Dysprosium",	   "Dy"  },
+		{ 67,  164.9303, "Holmium",        "Ho"  },
+		{ 68,  167.2590, "Erbium",	       "Er"  },
+		{ 69,  168.9342, "Thulium",  	   "Tm"  },
+		{ 70,  173.0400, "Ytterbium",	   "Yb"  },
+		{ 71,  174.9670, "Lutetium",	   "Lu"  },
+		{ 72,  178.4900, "Hafnium",  	   "Hf"  },
+		{ 73,  180.9479, "Tantalum",	   "Ta"  },
+		{ 74,  183.8400, "Tungsten",	   "W "  },
+		{ 75,  186.2070, "Rhenium",  	   "Re"  },
+		{ 76,  190.2300, "Osmium",  	   "Os"  },
+		{ 77,  192.2170, "Iridium",  	   "Ir"  },
+		{ 78,  195.0780, "Platinum",	   "Pt"  },
+		{ 79,  196.9665, "Gold",    	   "Au"  },
+		{ 80,  200.5900, "Mercury",  	   "Hg"  },
+		{ 81,  204.3833, "Thallium",	   "Tl"  },
+		{ 82,  207.2000, "Lead",    	   "Pb"  },
+		{ 83,  208.9804, "Bismuth",  	   "Bi"  },
+		{ 84,  209.0000, "Polonium",	   "Po"  },
+		{ 85,  210.0000, "Astatine",	   "At"  },
+		{ 86,  222.0000, "Radon",   	   "Rn"  },
+		{ 87,  223.0000, "Francium",	   "Fr"  },
+		{ 88,  226.0000, "Radium",   	   "Ra"  },
+		{ 89,  227.0000, "Actinium",	   "Ac"  },
+		{ 90,  232.0381, "Thorium",  	   "Th"  },
+		{ 91,  231.0359, "Protactinium",   "Pa"  },
+		{ 92,  238.0289, "Uranium", 	   "U2"  },
+		{ 93,  237.0000, "Neptunium",	   "Np"  },
+		{ 94,  244.0000, "Plutonium",	   "Pu"  },
+		{ 95,  243.0000, "Americium",	   "Am"  },
+		{ 96,  247.0000, "Curium",   	   "Cm"  },
+		{ 97,  247.0000, "Berkelium",	   "Bk"  },
+		{ 98,  251.0000, "Californium",	   "Cf"  },
+		{ 99,  252.0000, "Einsteinium",	   "Es"  },
+		{ 100, 257.0000, "Fermium",  	   "Fm"  },
+		{ 101, 258.0000, "Mendelevium",	   "Md"  },
+		{ 102, 259.0000, "Nobelium",       "No"  },
+		{ 103, 262.0000, "Lawrencium",     "Lr"  },
+		{ 104, 261.0000, "Rutherfordium",  "Rf"  },
+		{ 105, 262.0000, "Dubnium",        "Db"  },
+		{ 106, 266.0000, "Seaborgium",     "Sg"  },
+		{ 107, 264.0000, "Bohrium",        "Bh"  },
+		{ 108, 269.0000, "Hassium",        "Hs"  },
+		{ 109, 278.0000, "Meitnerium",     "Mt"  },
+		{ 110, 281.0000, "Darmstadtium",   "Ds"  },
+		{ 111, 282.0000, "Roentgenium",    "Rg"  },
+		{ 112, 285.0000, "Copernicium",    "Cn"  },
+		{ 113, 286.0000, "Ununtrium",      "Uut" },
+		{ 114, 289.0000, "Flerovium",      "Fl"  },
+		{ 115, 289.0000, "Ununpentium",    "Uup" },
+		{ 116, 293.0000, "Livermorium",    "Lv"  },
+		{ 117, 294.0000, "Ununseptium",    "Uus" },
+		{ 118, 294.0000, "Ununoctium",     "Uuo" },
+	};
+
+	std::map<std::string, uint16_t> m_symbolToNumber;
+	std::set<size_t> m_symbolLengths;
+
+	void MakeLower(std::string &value)
+	{
+#if 0
+		// NOTE: This is Unicode HOSTILE and will break
+		std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+#else
+		// There has to be a cleaner way to do this the "right way" :-/
+		auto & f = std::use_facet<std::ctype<std::string::traits_type::char_type>>(std::locale());
+		f.tolower(&value[0], &value[0] + value.size());
+#endif
+	}
+
+	void Init()
+	{
+		// load the map of symbol to number from the loading array
+		for (auto &element : m_elementDetails)
+		{
+			if (element.symbol.empty())
+				continue;
+			std::string lower_case = element.symbol;
+			MakeLower(lower_case);
+			assert(m_symbolToNumber.find(lower_case) == m_symbolToNumber.end() && "There is a duplicate in the seed data");
+			m_symbolToNumber[lower_case] = element.number;
+			m_symbolLengths.insert(lower_case.size());
+		}
+	}
+
+	//
+	// Strict is the original implementation that requires a string to be made completely of elements
+	//
+
+	typedef std::list<int16_t>         ElementSequence;
+	typedef std::list<ElementSequence> ElementSequenceResults;
+
+	/*
+		fill 'results' with all the atomicNumbers (for atomicSymbols) that comprise 'source'
+		i.e. "bacon" will create 3 seperate variations for 'results'
+		'history' is a local stack of partial atomicNumbers that we carry along with each recursive call.
+	*/
+	void ElementTokenizerStrict(const std::string &source, ElementSequenceResults &results, ElementSequence &history)
+	{
+		for (auto symbol_length : m_symbolLengths)
+		{
+			// Symbol to look for
+			std::string searchSymbol(source.c_str(), symbol_length);
+			if (searchSymbol.size() < symbol_length || searchSymbol.empty())
+				continue;
+
+			// Search for it
+			auto itFinder = m_symbolToNumber.find(searchSymbol);
+			if (itFinder == m_symbolToNumber.end())
+				continue;
+
+			// add what we got
+			history.push_back(itFinder->second);
+
+			// Get the rest of the string for a recursive call
+			std::string remainder(source.c_str() + symbol_length);
+			if (remainder.empty())
+			{
+				// Nothing left. We made it to the end of the source string
+				results.push_back(history);
+			}
+			else
+			{
+				// look deeper
+				ElementTokenizerStrict(remainder, results, history);
+			}
+
+			// stop tracking it
+			history.pop_back();
+		}
+	}
+
+
+	//
+	// More flexible implementation that allows for partial matches that would normally be discarded immediatly.
+	// These partial matches INCREASE EXECUTION TIME CONSIDERABLY.
+	// DO NOT USE IN PRODUCTION!
+	// Why? ElementTokenizerStrict ignores bad paths. This one can do ALL the paths/combos.  O(lastTimeLord)
+	//
+	// Word                  Partial  Results  Iterations  Profiler
+	// beer                  no       1        3                4ms
+	// jason                 true     11       94              20ms
+	// bacon                 no       3        8                9ms
+	// banana                no       1        6                7ms
+	// hell                  true     2        31              20ms
+	// breaking              true     49       1606           397ms
+	// breaking              no       0        4                2ms
+	// bad                   true     2        10              11ms
+	// bad                   no       0        3                6ms
+	// America               no       1        5                6ms        
+	// America               true     23       514            107ms
+	// Internationalization  no       0        24               6ms
+	// Internationalization  true     n/a      n/a          ! manually killed test at 15 minutes !
+	// abcdefgh              true     23       2551           621ms
+	// abcdefghi             true     47       7654          2107ms
+	// abcdefghij            true     47       22963         6351ms
+	//
+
+	// Instead of a simple list of atomicNumbers, we need to track the char that didn't match
+	struct Token 
+	{
+		int16_t atomicNumber;
+		char    noMatchChar;
+		Token() 
+			: atomicNumber(0)
+			, noMatchChar(0) 
+		{}
+		bool operator<(const Token & other) const
+		{
+			if (atomicNumber < other.atomicNumber)
+				return true;
+			else if (atomicNumber == other.atomicNumber && noMatchChar < other.noMatchChar)
+				return true;
+			return false;
+		}
+	};
+
+	typedef std::list<Token>        TokenSequence;
+	typedef std::set<TokenSequence> TokenSequenceResults;
+
+	// profiling helper: returns the number of recursive ElementTokenizer calls made
+	size_t ElementTokenizerExperimental(const std::string &source, TokenSequenceResults &results, TokenSequence &history, bool allow_partial)
+	{
+		size_t call_count = 1;
+
+		if (allow_partial && source.length() >= 10)
+		{
+			assert(!"don't be so inefficent! Long words are not worth the heat death of the universe");
+			return call_count;
+		}
+
+		for (auto symbol_length : m_symbolLengths)
+		{
+			// Symbol to look for
+			std::string searchSymbol(source.c_str(), symbol_length);
+			if (searchSymbol.size() < symbol_length || searchSymbol.empty())
+				continue;
+
+			// Search for it
+			auto itFinder = m_symbolToNumber.find(searchSymbol);
+
+			// track it
+			Token token;
+			if (itFinder != m_symbolToNumber.end())
+			{
+				token.atomicNumber = itFinder->second;
+			}
+			else if (allow_partial)
+			{
+				symbol_length = 1;
+				token.noMatchChar = searchSymbol[0];
+			}
+			else
+			{
+				continue;
+			}
+
+			// add what we got
+			history.push_back(token);
+
+			// Get the rest of the string for a recursive call
+			std::string remainder(source.c_str() + symbol_length);
+			if (remainder.empty())
+			{
+				// Nothing left. We made it to the end of the source string
+				results.insert(history);
+			}
+			else
+			{
+				// look deeper
+				call_count += ElementTokenizerExperimental(remainder, results, history, allow_partial);
+			}
+
+			// stop tracking it
+			history.pop_back();
+		}
+
+		return call_count;
+	}
+
+	// returns the number of ElementTokenizer calls made
+	size_t MakeElemental(std::string source_word, std::list<std::string> &result_list, bool allow_partials)
+	{
+		size_t result_call_count = 0;
+		MakeLower(source_word);
+		if (source_word.empty())
+			return result_call_count;
+
+		// Tokenize it!
+		TokenSequenceResults sequenceResults;
+		TokenSequence recentHistory;
+		result_call_count = ElementTokenizerExperimental(source_word, sequenceResults, recentHistory, allow_partials);
+		
+		assert(recentHistory.empty());
+
+		// Build out the human readable strings!
+		for (auto &sequence : sequenceResults)
+		{
+			std::string elemental_word;
+			size_t element_count = 0;
+
+			for (auto &token : sequence)
+			{
+				if (token.noMatchChar)
+				{
+					elemental_word.append(1, token.noMatchChar);
+				}
+				else if(token.atomicNumber)
+				{
+					element_count++;
+
+					if (token.atomicNumber < 0 || token.atomicNumber >= sizeof(m_elementDetails) / sizeof(m_elementDetails[0]))
+					{
+						assert(!"Bad atomicNumber?");
+						return result_call_count;
+					}
+
+					// Pretty print partials by wrapping [symbols] to distinguish them from non-matches
+					if (allow_partials)
+					{
+						elemental_word.append("[");
+					}
+
+					elemental_word.append(m_elementDetails[token.atomicNumber].symbol);
+
+					if (allow_partials)
+					{
+						elemental_word.append("]");
+					}
+				}
+				else
+				{
+					assert(!"that was unexpected");
+				}
+			}
+
+			// only allow results that have at least 1 element in them
+			if (element_count)
+			{
+				result_list.push_back(elemental_word);
+			}
+		}
+		return result_call_count;
+	}
+
+	Solution_BreakingBad_name_finder()
+	{
+		/*
+			A few years back it was trendy to make title screens with select sub groupings of letters to be replaced with Peiodic Table element names
+			There were t-shirts that read "[Be][Er]" (for Beryllium(4) and Erbium(68)) that those that didn't take chem101 would read as "Beer"
+
+			Let's find all the plausable strings that can be made from element names
+			"Beer"   -> "[Be][Er]"
+			"Banana" -> "[Ba][Na][Na]"
+			"Hell"   -> "[He]ll"       = PARTIAL & possibly invalid
+			"Bacon"  -> "[Ba][Co][N]", [B][Ac][O][N], [Ba][C][O][N] = MULTIPLE
+		*/
+		printf("Solution_BreakingBad_name_finder\n");
+		Init();
+
+		auto TestFunc = [&](const char *name, bool partials) {
+			std::list<std::string> name_list;
+			size_t count = MakeElemental(name, name_list, partials);
+			printf("Element conversion of [%s] yields [%zd] strings, partials[%s], iterations[%zd]\n", name, name_list.size(), partials ? "YES" : "NO", count);
+			for (auto &value : name_list)
+			{
+				printf("\t%s\n", value.c_str());
+			}
+		};
+
+		TestFunc("beer",     false);
+		TestFunc("Jason",    true);
+		TestFunc("bacon",    false);
+		TestFunc("banana",   false);
+		TestFunc("hell",     true);
+		TestFunc("Breaking", true);
+		TestFunc("Bad",      true);
+		TestFunc("Breaking", false);
+		TestFunc("Bad",      false);
+		TestFunc("America",  false);
+		TestFunc("America",  true);
+		//TestFunc("Internationalization",  false); // will assert for string being too long, 6ms
+		//TestFunc("Internationalization",  true);  // will assert for string being too long, >15minutes
+		TestFunc("abcdefgh", true);
+		//TestFunc("abcdefghi", true);   // 2 seconds!
+		//TestFunc("abcdefghij", true);  // 6 seconds!
+	}
+};
+
 void MyChallenges_UnitTest()
 {
-	printf("\nTESTING MyChallenges\n");
+	printf("\nTESTING MyChallenges - BEGIN\n");
 	Solution_leet_code_242 _solution_leet_code_242;
 	Solution_leet_code_27  _solution_leet_code_27;
 	Solution_leet_code_283 _solution_leet_code_283;
@@ -1370,4 +1794,6 @@ void MyChallenges_UnitTest()
 	Solution_leet_code_287 _Solution_leet_code_287;
 	Solution_random_3      _Solution_random_3;
 	Solution_turtle_simulator _Solution_turtle_simulator;
+	Solution_BreakingBad_name_finder _Solution_BreakingBad_name_finder;
+	printf("\nTESTING MyChallenges - END\n");
 }
